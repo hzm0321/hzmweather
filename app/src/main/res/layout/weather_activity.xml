@@ -11,34 +11,51 @@
         android:scaleType="centerCrop"
         android:id="@+id/iv_bing"/>
 
-    <ScrollView
+    <android.support.v4.widget.DrawerLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scrollbars="none"
-        android:overScrollMode="never"
-        android:id="@+id/sl_weather">
+        android:id="@+id/drawer_layout">
 
-        <LinearLayout
+        <android.support.v4.widget.SwipeRefreshLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:fitsSystemWindows="true">
+            android:layout_height="match_parent"
+            android:id="@+id/swipe_refresh">
 
-            <include layout="@layout/title" />
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="none"
+                android:overScrollMode="never"
+                android:id="@+id/sl_weather">
 
-            <include layout="@layout/now" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:fitsSystemWindows="true">
 
-            <include layout="@layout/forecast" />
+                    <include layout="@layout/title" />
 
-            <include layout="@layout/api" />
+                    <include layout="@layout/now" />
 
-            <include layout="@layout/lifestyle" />
+                    <include layout="@layout/forecast" />
 
-        </LinearLayout>
+                    <include layout="@layout/api" />
 
-    </ScrollView>
+                    <include layout="@layout/lifestyle" />
 
+                </LinearLayout>
 
+            </ScrollView>
+        </android.support.v4.widget.SwipeRefreshLayout>
 
+        <fragment
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:name="edu.eurasia.hzmweather.ChooseAreaFragment"
+            android:layout_gravity="start"
+            android:id="@+id/fragment_glide"/>
+
+    </android.support.v4.widget.DrawerLayout>
 
 </FrameLayout>

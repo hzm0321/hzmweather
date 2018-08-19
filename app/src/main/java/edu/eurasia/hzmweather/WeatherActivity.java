@@ -5,11 +5,15 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -37,6 +41,9 @@ import okhttp3.Response;
 
 public class WeatherActivity extends AppCompatActivity {
 
+    public SwipeRefreshLayout swipeRefresh;
+    public DrawerLayout drawerLayout;
+
     private ScrollView weatherLayout;
     private TextView titleCity;
     private TextView titleUpdatetime;
@@ -49,6 +56,8 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView carWashText;
     private TextView sportText;
     private ImageView bingImage;
+    private String mWeatherId;
+    private Button navButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +72,19 @@ public class WeatherActivity extends AppCompatActivity {
             getWindow().setStatusBarColor(Color.TRANSPARENT);
         }
         init();
+
+        //设置滑动按钮
+        navButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
+
+        //设置刷新
+        swipeRefresh = findViewById(R.id.swipe_refresh);
+        swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
+
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather", null);
@@ -86,6 +108,9 @@ public class WeatherActivity extends AppCompatActivity {
             WeatherForecast weatherForecast = Utility.handleWeatherForecastResponse(weatherForecastString);
             Air air = Utility.handleAirResponse(airString);
             WeatherLifeStyle weatherLifeStyle = Utility.handleWeatherLifeStyleResponse(weatherLifeStyleString);
+
+            mWeatherId = weather.basic.weatherId;
+
             //显示到界面
             showWeatherInfo(weather);
             showWeatherForecastInfo(weatherForecast);
@@ -93,10 +118,18 @@ public class WeatherActivity extends AppCompatActivity {
             showLifeStyleInfo(weatherLifeStyle);
         } else {
             //无缓存去查询服务器数据
-            String weatherId = getIntent().getStringExtra("weather_id");
+            mWeatherId = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
-            requestWeather(weatherId);
+            requestWeather(mWeatherId);
         }
+        //刷新动作
+        swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                loadBingPic();
+                requestWeather(mWeatherId);
+            }
+        });
     }
 
     /**
@@ -115,6 +148,8 @@ public class WeatherActivity extends AppCompatActivity {
         carWashText = findViewById(R.id.tv_car);
         sportText = findViewById(R.id.tv_sport);
         bingImage = findViewById(R.id.iv_bing);
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navButton = findViewById(R.id.nav_button);
     }
 
     /**
@@ -159,7 +194,8 @@ public class WeatherActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MyApplication.getContext(), "获取天气信息失败", Toast.LENGTH_SHORT);
+                        Toast.makeText(MyApplication.getContext(), "获取实时天气信息失败", Toast.LENGTH_SHORT).show();
+                        swipeRefresh.setRefreshing(false);
                     }
                 });
 
@@ -179,8 +215,11 @@ public class WeatherActivity extends AppCompatActivity {
                                     MyApplication.getContext()).edit();
                             editor.putString("weather", responseText);
                             editor.apply();
+                            mWeatherId = weather.basic.weatherId;
                             LogUtil.d("实时天气返回的json数据",responseText);
                            showWeatherInfo(weather);
+                        } else {
+                            Toast.makeText(MyApplication.getContext(), "获取实时天气信息失败", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -196,7 +235,8 @@ public class WeatherActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MyApplication.getContext(), "获取天气信息失败", Toast.LENGTH_SHORT);
+                        Toast.makeText(MyApplication.getContext(), "获取未来天气信息失败", Toast.LENGTH_SHORT).show();
+                        swipeRefresh.setRefreshing(false);
                     }
                 });
             }
@@ -214,6 +254,8 @@ public class WeatherActivity extends AppCompatActivity {
                             editor.putString("forecastWeather", responseForecastText);
                             editor.apply();
                             showWeatherForecastInfo(weatherForecast);
+                        } else {
+                            Toast.makeText(MyApplication.getContext(), "获取未来天气信息失败", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -229,7 +271,8 @@ public class WeatherActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MyApplication.getContext(), "获取天气信息失败", Toast.LENGTH_SHORT);
+                        Toast.makeText(MyApplication.getContext(), "F获取空气质量信息失败", Toast.LENGTH_SHORT).show();
+                        swipeRefresh.setRefreshing(false);
                     }
                 });
             }
@@ -248,6 +291,8 @@ public class WeatherActivity extends AppCompatActivity {
                             editor.apply();
                             showAirInfo(air);
 
+                        } else {
+                            Toast.makeText(MyApplication.getContext(), "获取空气质量信息失败", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -263,7 +308,8 @@ public class WeatherActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MyApplication.getContext(), "获取天气信息失败", Toast.LENGTH_SHORT);
+                        Toast.makeText(MyApplication.getContext(), "获取生活指数信息失败", Toast.LENGTH_SHORT).show();
+                        swipeRefresh.setRefreshing(false);
                     }
                 });
             }
@@ -281,7 +327,10 @@ public class WeatherActivity extends AppCompatActivity {
                             editor.putString("lifestyle", responseLifeStyleText);
                             editor.apply();
                             showLifeStyleInfo(weatherLifeStyle);
+                        } else {
+                            Toast.makeText(MyApplication.getContext(), "获取生活指数信息失败", Toast.LENGTH_SHORT).show();
                         }
+                        swipeRefresh.setRefreshing(false);
                     }
                 });
             }
