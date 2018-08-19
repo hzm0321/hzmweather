@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">HzmWeather</string>
+    <string name="app_name">HZMWeather</string>
     <string name="forecast">预报</string>
     <string name="air_quality">空气质量</string>
     <string name="AQI">AQI指数</string>

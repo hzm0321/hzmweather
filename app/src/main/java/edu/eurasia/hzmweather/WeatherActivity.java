@@ -295,6 +295,8 @@ public class WeatherActivity extends AppCompatActivity {
 
                         } else {
                             Toast.makeText(MyApplication.getContext(), "获取空气质量信息失败", Toast.LENGTH_SHORT).show();
+                            aqiText.setText("");
+                            pm25Text.setText("");
                         }
                     }
                 });
