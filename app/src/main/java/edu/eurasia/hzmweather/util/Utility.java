@@ -3,6 +3,8 @@ package edu.eurasia.hzmweather.util;
 import android.text.TextUtils;
 
 
+import com.google.gson.Gson;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,6 +12,12 @@ import org.json.JSONObject;
 import edu.eurasia.hzmweather.db.City;
 import edu.eurasia.hzmweather.db.County;
 import edu.eurasia.hzmweather.db.Province;
+import edu.eurasia.hzmweather.gson.Air;
+import edu.eurasia.hzmweather.gson.Lifestyle;
+import edu.eurasia.hzmweather.gson.Weather;
+import edu.eurasia.hzmweather.gson.WeatherForecast;
+import edu.eurasia.hzmweather.gson.WeatherLifeStyle;
+import edu.eurasia.hzmweather.log.LogUtil;
 
 /**
  * 类名: Utility<br>
@@ -86,4 +94,77 @@ public class Utility {
         }
         return false;
     }
+
+    /**
+     * 将返回的JSon数据解析成Weather实体类
+     */
+    public static Weather handleWeatherResponse(String response) {
+
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray jsonArray = jsonObject.getJSONArray("HeWeather6");
+            String weatherContent = jsonArray.getJSONObject(0).toString();
+            LogUtil.d("实时天气",weatherContent);
+            //将JSon数据转换成Weather对象
+            return new Gson().fromJson(weatherContent, Weather.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 将返回的JSon数据解析成Air实体类
+     */
+    public static Air handleAirResponse(String response) {
+
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray jsonArray = jsonObject.getJSONArray("HeWeather6");
+            String airContent = jsonArray.getJSONObject(0).toString();
+            LogUtil.d("空气指数",airContent);
+            //将JSon数据转换成Weather对象
+            return new Gson().fromJson(airContent, Air.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 将返回的JSon数据解析成WeatherForecast实体类
+     */
+    public static WeatherForecast handleWeatherForecastResponse(String response) {
+
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray jsonArray = jsonObject.getJSONArray("HeWeather6");
+            String weatherForecastContent = jsonArray.getJSONObject(0).toString();
+            LogUtil.d("未来天气",weatherForecastContent);
+            //将JSon数据转换成Weather对象
+            return new Gson().fromJson(weatherForecastContent, WeatherForecast.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 将返回的JSon数据解析成WeatherForecast实体类
+     */
+    public static WeatherLifeStyle handleWeatherLifeStyleResponse(String response) {
+
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray jsonArray = jsonObject.getJSONArray("HeWeather6");
+            String lifeStyle = jsonArray.getJSONObject(0).toString();
+            LogUtil.d("生活指数",lifeStyle);
+            //将JSon数据转换成Weather对象
+            return new Gson().fromJson(lifeStyle, WeatherLifeStyle.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
