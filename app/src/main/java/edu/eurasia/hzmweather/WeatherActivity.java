@@ -1,5 +1,6 @@
 package edu.eurasia.hzmweather;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -33,6 +34,7 @@ import edu.eurasia.hzmweather.gson.Weather;
 import edu.eurasia.hzmweather.gson.WeatherForecast;
 import edu.eurasia.hzmweather.gson.WeatherLifeStyle;
 import edu.eurasia.hzmweather.log.LogUtil;
+import edu.eurasia.hzmweather.service.AutoUpdateService;
 import edu.eurasia.hzmweather.util.HttpUtil;
 import edu.eurasia.hzmweather.util.Utility;
 import okhttp3.Call;
@@ -351,6 +353,9 @@ public class WeatherActivity extends AppCompatActivity {
         degreeText.setText(degree);
         weatherInfoText.setText(weatherInfo);
 
+        //启动后台服务
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 
     /**
@@ -397,4 +402,13 @@ public class WeatherActivity extends AppCompatActivity {
         weatherLayout.setVisibility(View.VISIBLE);
     }
 
+    @Override
+    protected void onDestroy() {
+        LogUtil.d("WeatherActivity:","页面销毁了");
+        super.onDestroy();
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(
+                MyApplication.getContext()).edit();
+        editor.clear();
+        editor.apply();
+    }
 }
