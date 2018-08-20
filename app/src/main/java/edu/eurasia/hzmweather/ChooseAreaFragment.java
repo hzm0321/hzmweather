@@ -2,8 +2,13 @@ package edu.eurasia.hzmweather;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -84,6 +89,7 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
 
 
 
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
@@ -94,6 +100,9 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
          * 3.是否将生成的视图添加给父视图
          */
         View view = inflater.inflate(R.layout.choose_area, container, false);
+        view.setFocusable(true);
+        view.setFocusableInTouchMode(true);
+        view.setOnKeyListener(backListener);
         titleText = view.findViewById(R.id.tv_title);
         backButton = view.findViewById(R.id.btn_back);
         listView = view.findViewById(R.id.lv_list);
@@ -103,6 +112,7 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
          * 2.ListView子项布局的id
          * 3.要适配的数据
          */
+
         adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, dataList);
         listView.setAdapter(adapter);
         return view;
@@ -115,6 +125,9 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+
+
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -127,10 +140,14 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
                     queryCounties();
                 } else if (currentLevel == LEVEL_COUNTY) {
                     String weatherId = countyList.get(i).getWeatherId();
+
+                    //判断当前获得的activity是在Main还是在Weather中
                     if (getActivity() instanceof MainActivity) {
                         Intent intent = new Intent(getActivity(), WeatherActivity.class);
                         intent.putExtra("weather_id", weatherId);
                         startActivity(intent);
+                        LogUtil.d("碎片页面","从主页面进入");
+
                         getActivity().finish();
                     } else if (getActivity() instanceof WeatherActivity) {
                         WeatherActivity activity = (WeatherActivity) getActivity();
@@ -141,6 +158,7 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
                 }
             }
         });
+
         //对按钮添加点击事件,判断之前选中的级别,并查询
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -152,7 +170,8 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
                 }
             }
         });
-        queryProvinces();
+
+            queryProvinces();
     }
 
 
@@ -225,7 +244,6 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
             listView.setSelection(0);
             currentLevel = LEVEL_COUNTY;
         } else {
-            int provinceCode = selectedProvince.getProvinceCode();
             int cityCode = selectedCity.getCityCode();
             String address = "http://119.29.172.36/china/city/" + cityCode + ".json";
             queryFromServer(address, "county");
@@ -300,6 +318,39 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
             progressDialog.dismiss();
         }
     }
+
+    /**
+     * 返回键监听
+     */
+    long firstTime = 0;
+    private View.OnKeyListener backListener = new View.OnKeyListener() {
+        @Override
+        public boolean onKey(View view, int i, KeyEvent keyEvent) {
+            if (keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
+                if (currentLevel == LEVEL_COUNTY) {
+                    queryCities();
+                } else if (currentLevel == LEVEL_CITY) {
+                    queryProvinces();
+                } else {
+                    long secondTime = System.currentTimeMillis();
+                    if (secondTime - firstTime > 2000) {
+                        Toast.makeText(MyApplication.getContext(), "再按一次退出程序", Toast.LENGTH_SHORT).show();
+                        firstTime = secondTime;
+                        return true;
+                    } else {
+                        System.exit(0);
+                    }
+                }
+                if (i == KeyEvent.KEYCODE_BACK) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    };
+
+
+
 
     @Override
     public void onDestroy() {

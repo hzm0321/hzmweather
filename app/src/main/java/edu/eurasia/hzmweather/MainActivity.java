@@ -40,5 +40,9 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         LogUtil.d("主页面","销毁方法被执行了");
         initDb();
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(
+                MyApplication.getContext()).edit();
+        editor.clear();
+        editor.apply();
     }
 }
