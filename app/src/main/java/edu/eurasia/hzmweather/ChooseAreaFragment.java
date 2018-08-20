@@ -202,7 +202,6 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
      */
     private void queryCities() {
         titleText.setText(selectedProvince.getProvinceName());
-        backButton.setVisibility(View.VISIBLE);
         cityList = LitePal
                 .where("provinceid=?",String.valueOf(selectedProvince.getId()))
                 .find(City.class);
@@ -212,6 +211,7 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
                 dataList.add(city.getCityName());
             }
             adapter.notifyDataSetChanged();
+            backButton.setVisibility(View.VISIBLE);
             listView.setSelection(0);
             currentLevel = LEVEL_CITY;
         } else {
@@ -231,7 +231,6 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
     private void queryCounties() {
         LogUtil.d(TAG,selectedCity.getCityName());
         titleText.setText(selectedCity.getCityName());
-        backButton.setVisibility(View.VISIBLE);
         countyList = LitePal
                 .where("cityid = ?", String.valueOf(selectedCity.getId()))
                 .find(County.class);
@@ -241,6 +240,7 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
                 dataList.add(county.getCountyName());
             }
             adapter.notifyDataSetChanged();
+            backButton.setVisibility(View.VISIBLE);
             listView.setSelection(0);
             currentLevel = LEVEL_COUNTY;
         } else {
@@ -338,6 +338,11 @@ public class ChooseAreaFragment extends android.support.v4.app.Fragment {
                         firstTime = secondTime;
                         return true;
                     } else {
+                        //退出时清空缓存
+                        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(
+                                MyApplication.getContext()).edit();
+                        editor.clear();
+                        editor.apply();
                         System.exit(0);
                     }
                 }
